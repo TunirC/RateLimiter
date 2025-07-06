@@ -11,14 +11,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SlidingLogRateLimiter implements RateLimiter {
 
-    private final long windowSizeInSeconds;
     private final int requestLimit;
+    private final long windowSizeInSeconds;
     private KeyResolver resolver;
     private final Map<String, ConcurrentLinkedDeque<Long>> userBucket = new ConcurrentHashMap<>();
 
-    public SlidingLogRateLimiter(long windowSizeInSeconds, int requestLimit, KeyResolver resolver) {
-        this.windowSizeInSeconds = windowSizeInSeconds;
+    public SlidingLogRateLimiter(int requestLimit, long windowSizeInSeconds, KeyResolver resolver) {
         this.requestLimit = requestLimit;
+        this.windowSizeInSeconds = windowSizeInSeconds;
         this.resolver = resolver;
     }
 

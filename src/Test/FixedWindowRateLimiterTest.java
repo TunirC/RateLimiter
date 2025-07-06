@@ -3,6 +3,7 @@ package Test;
 import Core.Resolver.HybridKeyResolver;
 import Core.Resolver.KeyResolver;
 import FixedWindow.FixedWindowRateLimiter;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Instant;
@@ -12,7 +13,12 @@ import static org.junit.Assert.assertTrue;
 
 public class FixedWindowRateLimiterTest {
 
-    HybridKeyResolver resolver = new HybridKeyResolver();
+    private KeyResolver resolver;
+
+    @Before
+    public void setUp() throws Exception {
+        resolver = new HybridKeyResolver();
+    }
 
     @Test
     public void allowRequestWithinLimit() {
