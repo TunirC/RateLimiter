@@ -1,21 +1,21 @@
-package core;
+package Core;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public class UserBucket {
-    private LocalDateTime windowStartTime;
+    private Instant windowStartTime;
     private int requestCount;
 
-    public UserBucket(LocalDateTime windowStartTime, int requestCount) {
+    public UserBucket(Instant windowStartTime, int requestCount) {
         this.windowStartTime = windowStartTime;
         this.requestCount = requestCount;
     }
 
-    public LocalDateTime getWindowStartTime() {
+    public Instant getWindowStartTime() {
         return windowStartTime;
     }
 
-    public void setWindowStartTime(LocalDateTime windowStartTime) {
+    public void setWindowStartTime(Instant windowStartTime) {
         this.windowStartTime = windowStartTime;
     }
 
