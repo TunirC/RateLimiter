@@ -27,7 +27,6 @@ public class SlidingLogRateLimiter implements RateLimiter {
         List<String> keys = resolver.resolveKey(userId, ip);
         AtomicBoolean setAllowRequest = new AtomicBoolean(true);
 
-
         for (String key: keys) {
             ConcurrentLinkedDeque<Long> timestampQueue = userBucket.computeIfAbsent(key, (id) -> new ConcurrentLinkedDeque<>());
 
