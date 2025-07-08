@@ -24,7 +24,7 @@ public class FixedWindowRateLimiterTest {
     public void allowRequestWithinLimit() {
 
         FixedWindowRateLimiter fixedWindowRateLimiter = new FixedWindowRateLimiter(5, 60, resolver);
-        long now = Instant.now().getEpochSecond();
+        long now = Instant.now().toEpochMilli();
 
         for (int i = 0; i < 5; i++) {
             assertTrue(fixedWindowRateLimiter.allowRequest("user1", "", now));
@@ -34,7 +34,7 @@ public class FixedWindowRateLimiterTest {
     @Test
     public void rejectRequestOverLimit() {
         FixedWindowRateLimiter fixedWindowRateLimiter = new FixedWindowRateLimiter(5, 60, resolver);
-        long now = Instant.now().getEpochSecond();
+        long now = Instant.now().toEpochMilli();
 
         for (int i = 0; i < 5; i++) {
             fixedWindowRateLimiter.allowRequest("user1", "", now);
@@ -46,20 +46,19 @@ public class FixedWindowRateLimiterTest {
     @Test
     public void testNewWindowReset() {
         FixedWindowRateLimiter rateLimiter = new FixedWindowRateLimiter(2, 60, resolver);
-        long now = Instant.now().getEpochSecond();
+        long now = Instant.now().toEpochMilli();
 
         assertTrue(rateLimiter.allowRequest("user1","", now));
         assertTrue(rateLimiter.allowRequest("user1", "", now));
-
         assertFalse(rateLimiter.allowRequest("user1", "", now));
 
-        assertTrue(rateLimiter.allowRequest("user1", "", now + 60));
+        assertTrue(rateLimiter.allowRequest("user1", "", now + 60000));
     }
 
     @Test
     public void testUserAndIPRateLimiting() {
         FixedWindowRateLimiter rateLimiter = new FixedWindowRateLimiter(3, 60, resolver);
-        long now = Instant.now().getEpochSecond();
+        long now = Instant.now().toEpochMilli();
 
         assertTrue(rateLimiter.allowRequest("user1", "192.168.1.1", now));
         assertTrue(rateLimiter.allowRequest("user1", "192.168.1.1", now));
@@ -71,7 +70,7 @@ public class FixedWindowRateLimiterTest {
     @Test
     public void testMultipleUsersWithSameIP() {
         FixedWindowRateLimiter fixedWindowRateLimiter = new FixedWindowRateLimiter(3, 60, resolver);
-        long now = Instant.now().getEpochSecond();
+        long now = Instant.now().toEpochMilli();
 
         assertTrue(fixedWindowRateLimiter.allowRequest("user1", "192.168.0.10", now));
         assertTrue(fixedWindowRateLimiter.allowRequest("user2", "192.168.0.10", now));

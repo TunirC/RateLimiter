@@ -14,40 +14,45 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class FixedWindowRateLimiter implements RateLimiter {
 
     private final int requestLimit;
-    private final long windowSizeInSeconds;
+    private final long windowSizeInMs;
     private KeyResolver keyResolver;
     Map<String, UserBucket> userRequests = new ConcurrentHashMap<>();
 
     public FixedWindowRateLimiter(int requestLimit, long windowSizeInSeconds, KeyResolver resolver) {
         this.requestLimit = requestLimit;
-        this.windowSizeInSeconds = windowSizeInSeconds;
+        this.windowSizeInMs = windowSizeInSeconds * 1000L;
         this.keyResolver = resolver;
     }
 
     @Override
     public boolean allowRequest(String userId, String ip, long incomingTimestamp) {
         List<String> keys = keyResolver.resolveKey(userId, ip);
-        AtomicBoolean setLimit = new AtomicBoolean(true);
-
+        AtomicBoolean requestAllowed = new AtomicBoolean(true);
         for (String key: keys) {
-            userRequests.compute(key, (id, bucket) -> {
-                Instant requestInstance = Instant.ofEpochSecond(incomingTimestamp);
-                if (bucket != null && checkValidWindow(bucket.getWindowStartTime(), requestInstance)) {
-                    int updatedCount = bucket.getRequestCount() + 1;
-                    if (updatedCount > requestLimit) setLimit.set(false);
-                    bucket.setRequestCount(updatedCount);
+            long currentWindowStart = (incomingTimestamp / windowSizeInMs) * windowSizeInMs;
+            Instant currentWindowStartInstant = Instant.ofEpochMilli(currentWindowStart);
 
+            userRequests.compute(key, (id, bucket) -> {
+                if (bucket != null && checkValidWindow(bucket.getWindowStartTime(), currentWindowStartInstant)) {
+                    if (bucket.getRequestCount() >= requestLimit) {
+                        requestAllowed.set(false);
+                        return bucket;
+                    }
+
+                    bucket.setRequestCount(bucket.getRequestCount() + 1);
                     return bucket;
                 } else {
-                    return new UserBucket(requestInstance, 1);
+                    return new UserBucket(currentWindowStartInstant, 1);
                 }
             });
+
+            if (!requestAllowed.get()) break;
         }
 
-        return setLimit.get();
+        return requestAllowed.get();
     }
 
-    private boolean checkValidWindow(Instant windowTime, Instant requestTime) {
-        return Duration.between(windowTime, requestTime).getSeconds() < windowSizeInSeconds;
+    private boolean checkValidWindow(Instant bucketWindowStart, Instant currentWindowStart) {
+        return bucketWindowStart.equals(currentWindowStart);
     }
 }
