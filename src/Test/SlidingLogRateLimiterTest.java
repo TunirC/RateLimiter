@@ -18,7 +18,7 @@ public class SlidingLogRateLimiterTest {
     @Before
     public void setUp() throws Exception {
         resolver = new HybridKeyResolver();
-        currentTimeStampInSecond = Instant.now().getEpochSecond();
+        currentTimeStampInSecond = Instant.now().toEpochMilli();
     }
 
     @Test

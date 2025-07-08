@@ -12,13 +12,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SlidingLogRateLimiter implements RateLimiter {
 
     private final int requestLimit;
-    private final long windowSizeInSeconds;
+    private final long windowSizeInMs;
     private KeyResolver resolver;
     private final Map<String, ConcurrentLinkedDeque<Long>> userBucket = new ConcurrentHashMap<>();
 
     public SlidingLogRateLimiter(int requestLimit, long windowSizeInSeconds, KeyResolver resolver) {
         this.requestLimit = requestLimit;
-        this.windowSizeInSeconds = windowSizeInSeconds;
+        this.windowSizeInMs = windowSizeInSeconds * 1000L;
         this.resolver = resolver;
     }
 
@@ -30,9 +30,9 @@ public class SlidingLogRateLimiter implements RateLimiter {
         for (String key: keys) {
             ConcurrentLinkedDeque<Long> timestampQueue = userBucket.computeIfAbsent(key, (id) -> new ConcurrentLinkedDeque<>());
 
-            long offset = incomingTimestamp - windowSizeInSeconds;
+            long windowStartOffset = incomingTimestamp - windowSizeInMs;
 
-            while (!timestampQueue.isEmpty() && timestampQueue.peekFirst() < offset) {
+            while (!timestampQueue.isEmpty() && timestampQueue.peekFirst() <= windowStartOffset) {
                 timestampQueue.pollFirst();
             }
 
@@ -41,6 +41,8 @@ public class SlidingLogRateLimiter implements RateLimiter {
             } else {
                 setAllowRequest.set(false);
             }
+
+            if (!setAllowRequest.get()) break;
         }
 
         return setAllowRequest.get();

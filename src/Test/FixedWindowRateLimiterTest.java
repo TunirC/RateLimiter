@@ -14,10 +14,12 @@ import static org.junit.Assert.assertTrue;
 public class FixedWindowRateLimiterTest {
 
     private KeyResolver resolver;
+    private long currentTimeStampInMs;
 
     @Before
     public void setUp() throws Exception {
         resolver = new HybridKeyResolver();
+        currentTimeStampInMs = Instant.now().toEpochMilli();
     }
 
     @Test
@@ -27,20 +29,19 @@ public class FixedWindowRateLimiterTest {
         long now = Instant.now().toEpochMilli();
 
         for (int i = 0; i < 5; i++) {
-            assertTrue(fixedWindowRateLimiter.allowRequest("user1", "", now));
+            assertTrue(fixedWindowRateLimiter.allowRequest("user1", "", currentTimeStampInMs));
         }
     }
 
     @Test
     public void rejectRequestOverLimit() {
         FixedWindowRateLimiter fixedWindowRateLimiter = new FixedWindowRateLimiter(5, 60, resolver);
-        long now = Instant.now().toEpochMilli();
 
         for (int i = 0; i < 5; i++) {
-            fixedWindowRateLimiter.allowRequest("user1", "", now);
+            fixedWindowRateLimiter.allowRequest("user1", "", currentTimeStampInMs);
         }
 
-        assertFalse(fixedWindowRateLimiter.allowRequest("user1", "", now));
+        assertFalse(fixedWindowRateLimiter.allowRequest("user1", "", currentTimeStampInMs));
     }
 
     @Test
@@ -48,11 +49,11 @@ public class FixedWindowRateLimiterTest {
         FixedWindowRateLimiter rateLimiter = new FixedWindowRateLimiter(2, 60, resolver);
         long now = Instant.now().toEpochMilli();
 
-        assertTrue(rateLimiter.allowRequest("user1","", now));
-        assertTrue(rateLimiter.allowRequest("user1", "", now));
-        assertFalse(rateLimiter.allowRequest("user1", "", now));
+        assertTrue(rateLimiter.allowRequest("user1","", currentTimeStampInMs));
+        assertTrue(rateLimiter.allowRequest("user1", "", currentTimeStampInMs));
+        assertFalse(rateLimiter.allowRequest("user1", "", currentTimeStampInMs));
 
-        assertTrue(rateLimiter.allowRequest("user1", "", now + 60000));
+        assertTrue(rateLimiter.allowRequest("user1", "", currentTimeStampInMs + 60000));
     }
 
     @Test
@@ -60,11 +61,11 @@ public class FixedWindowRateLimiterTest {
         FixedWindowRateLimiter rateLimiter = new FixedWindowRateLimiter(3, 60, resolver);
         long now = Instant.now().toEpochMilli();
 
-        assertTrue(rateLimiter.allowRequest("user1", "192.168.1.1", now));
-        assertTrue(rateLimiter.allowRequest("user1", "192.168.1.1", now));
-        assertTrue(rateLimiter.allowRequest("user1", "192.168.1.1", now));
+        assertTrue(rateLimiter.allowRequest("user1", "192.168.1.1", currentTimeStampInMs));
+        assertTrue(rateLimiter.allowRequest("user1", "192.168.1.1", currentTimeStampInMs));
+        assertTrue(rateLimiter.allowRequest("user1", "192.168.1.1", currentTimeStampInMs));
 
-        assertFalse(rateLimiter.allowRequest("user1", "192.168.1.1", now));
+        assertFalse(rateLimiter.allowRequest("user1", "192.168.1.1", currentTimeStampInMs));
     }
 
     @Test
@@ -72,9 +73,9 @@ public class FixedWindowRateLimiterTest {
         FixedWindowRateLimiter fixedWindowRateLimiter = new FixedWindowRateLimiter(3, 60, resolver);
         long now = Instant.now().toEpochMilli();
 
-        assertTrue(fixedWindowRateLimiter.allowRequest("user1", "192.168.0.10", now));
-        assertTrue(fixedWindowRateLimiter.allowRequest("user2", "192.168.0.10", now));
-        assertTrue(fixedWindowRateLimiter.allowRequest("user3", "192.168.0.10", now));
-        assertFalse(fixedWindowRateLimiter.allowRequest("user1", "192.168.0.10", now));
+        assertTrue(fixedWindowRateLimiter.allowRequest("user1", "192.168.0.10", currentTimeStampInMs));
+        assertTrue(fixedWindowRateLimiter.allowRequest("user2", "192.168.0.10", currentTimeStampInMs));
+        assertTrue(fixedWindowRateLimiter.allowRequest("user3", "192.168.0.10", currentTimeStampInMs));
+        assertFalse(fixedWindowRateLimiter.allowRequest("user1", "192.168.0.10", currentTimeStampInMs));
     }
 }
